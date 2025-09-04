@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Brain, X, Play, Pause, Square, RotateCcw, Minimize2, History } from "lucide-react";
 import {
@@ -9,7 +9,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { FocusSession } from "@/api/entities";
-import { Input } from "@/components/ui/input";
 
 import DistractionJar from "../components/DistractionJar";
 import StatusBar from "../components/StatusBar";
@@ -27,7 +26,6 @@ export default function AnchorApp() {
   const [time, setTime] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const [mode, setMode] = useState('freeflow');
-  const [customMinutes, setCustomMinutes] = useState('');
   const [initialTime, setInitialTime] = useState(0);
   const [isTimerVisible, setIsTimerVisible] = useState(false);
   const [isStartModalOpen, setIsStartModalOpen] = useState(false);
@@ -122,23 +120,9 @@ export default function AnchorApp() {
     };
   }, []);
 
-  // Load data from localStorage on mount
+  // Load session history on mount
   useEffect(() => {
     loadSessions();
-    const savedThoughts = localStorage.getItem('anchor-thoughts');
-    if (savedThoughts) setThoughts(JSON.parse(savedThoughts));
-    
-    const savedState = localStorage.getItem('anchor-state');
-    if (savedState) {
-      const state = JSON.parse(savedState);
-      setTask(state.task || '');
-      setTime(state.time || 0);
-      setMode(state.mode || 'freeflow');
-      setInitialTime(state.initialTime || 0);
-      setContextNotes(state.contextNotes || '');
-      setIsIncognito(state.isIncognito || false);
-      setIsTimerVisible(state.isTimerVisible || false);
-    }
   }, []);
 
   const loadSessions = async () => {
@@ -146,22 +130,7 @@ export default function AnchorApp() {
     setSessions(data);
   };
 
-  // Save data to localStorage on change
-  useEffect(() => {
-    localStorage.setItem('anchor-thoughts', JSON.stringify(thoughts));
-    const stateToSave = { 
-      task, 
-      time, 
-      mode, 
-      initialTime, 
-      contextNotes,
-      isIncognito,
-      isTimerVisible
-    };
-    if (!isRunning) {
-        localStorage.setItem('anchor-state', JSON.stringify(stateToSave));
-    }
-  }, [thoughts, task, time, mode, initialTime, contextNotes, isIncognito, isTimerVisible, isRunning]);
+  // State is kept in memory for the duration of the session
 
   // Timer logic
   useEffect(() => {
@@ -204,7 +173,6 @@ export default function AnchorApp() {
     setContextNotes('');
     setCurrentSessionId(null);
     setIsTimerVisible(false);
-    setCustomMinutes('');
     setIsIncognito(false);
   };
 
