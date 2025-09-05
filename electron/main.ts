@@ -1,5 +1,5 @@
-import { app, BrowserWindow, Menu } from 'electron';
-import path from 'node:path';
+import { app, BrowserWindow, Menu, MenuItemConstructorOptions } from 'electron';
+import * as path from 'node:path';
 import { autoUpdater } from 'electron-updater';
 
 let mainWindow: BrowserWindow | null = null;
@@ -10,14 +10,14 @@ function createWindow() {
     width: 1200,
     height: 800,
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
+      preload: path.join(__dirname, 'preload.cjs'),
     },
   });
 
-  const template = [
+  const template: MenuItemConstructorOptions[] = [
     {
       label: 'File',
-      submenu: [{ role: 'quit' }],
+      submenu: [{ role: 'quit' as const }],
     },
   ];
   const menu = Menu.buildFromTemplate(template);
@@ -50,7 +50,7 @@ app.whenReady().then(() => {
   });
 });
 
-autoUpdater.setFeedURL({ url: 'https://example.com/updates' });
+autoUpdater.setFeedURL({ provider: 'generic', url: 'https://example.com/updates' });
 autoUpdater.on('update-downloaded', () => {
   autoUpdater.quitAndInstall();
 });

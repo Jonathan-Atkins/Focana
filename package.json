@@ -9,7 +9,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "start-electron": "npm run build-electron && electron .",
-    "build-electron": "tsc electron/main.ts electron/preload.ts --outDir dist-electron",
+    "build-electron": "tsc electron/main.ts electron/preload.ts --outDir dist-electron && mv dist-electron/main.js dist-electron/main.cjs && mv dist-electron/preload.js dist-electron/preload.cjs",
     "dev:desktop": "concurrently \"npm run dev\" \"npm run start-electron\"",
     "build:desktop": "npm run build && electron-builder --mac"
   },
@@ -86,7 +86,7 @@
     "vite": "^6.1.0",
     "wait-on": "^8.0.4"
   },
-  "main": "dist-electron/main.js",
+  "main": "dist-electron/main.cjs",
   "build": {
     "appId": "com.focana.app",
     "mac": {
