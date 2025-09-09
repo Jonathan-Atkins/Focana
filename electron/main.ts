@@ -5,13 +5,6 @@ import { autoUpdater } from 'electron-updater';
 let mainWindow: BrowserWindow | null = null;
 const isDev = !app.isPackaged;
 
-ipcMain.on('card-bounds', (_event, bounds: Electron.Rectangle) => {
-  if (mainWindow) {
-    const current = mainWindow.getBounds();
-    mainWindow.setBounds({ ...current, ...bounds });
-  }
-});
-
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1200,
