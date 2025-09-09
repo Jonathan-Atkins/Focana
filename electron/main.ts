@@ -1,18 +1,23 @@
-import { app, BrowserWindow, Menu, MenuItemConstructorOptions } from 'electron';
+import { app, BrowserWindow, Menu, MenuItemConstructorOptions, ipcMain } from 'electron';
 import * as path from 'node:path';
 import { autoUpdater } from 'electron-updater';
 
 let mainWindow: BrowserWindow | null = null;
 const isDev = !app.isPackaged;
 
+ipcMain.on('card-bounds', (_event, bounds: Electron.Rectangle) => {
+  if (mainWindow) {
+    const current = mainWindow.getBounds();
+    mainWindow.setBounds({ ...current, ...bounds });
+  }
+});
+
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 384,
-    height: 336,
-    minWidth: 384,
-    minHeight: 336,
-    maxWidth: 384,
-    maxHeight: 336,
+    width: 1200,
+    height: 800,
+    minWidth: 1200,
+    minHeight: 800,
     resizable: false,
     title: 'Focana',
     webPreferences: {
@@ -31,6 +36,9 @@ function createWindow() {
 
   if (isDev) {
     mainWindow.loadURL('http://localhost:5173');
+    if (process.env.OPEN_DEVTOOLS === 'true') {
+      mainWindow.webContents.openDevTools();
+    }
   } else {
     const indexHtml = path.join(__dirname, '../dist/index.html');
     mainWindow.loadFile(indexHtml);
