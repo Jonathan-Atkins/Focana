@@ -7,8 +7,13 @@ const isDev = !app.isPackaged;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 1200,
-    height: 800,
+    width: 384,
+    height: 336,
+    minWidth: 384,
+    minHeight: 336,
+    maxWidth: 384,
+    maxHeight: 336,
+    resizable: false,
     title: 'Focana',
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
@@ -24,14 +29,8 @@ function createWindow() {
   const menu = Menu.buildFromTemplate(template);
   Menu.setApplicationMenu(menu);
 
-  mainWindow.on('resize', () => {
-    const bounds = mainWindow?.getBounds();
-    if (bounds) mainWindow?.webContents.send('window-resize', bounds);
-  });
-
   if (isDev) {
     mainWindow.loadURL('http://localhost:5173');
-    mainWindow.webContents.openDevTools();
   } else {
     const indexHtml = path.join(__dirname, '../dist/index.html');
     mainWindow.loadFile(indexHtml);
