@@ -75,6 +75,31 @@ export default function AnchorApp() {
     }
   }, []);
 
+  // Keep Electron window in sync with card size
+  useEffect(() => {
+    if (!window.electronAPI?.setCardBounds || !dragRef.current) return;
+
+    const sendBounds = (width, height) => {
+      window.electronAPI.setCardBounds({
+        width: Math.round(width),
+        height: Math.round(height),
+      });
+    };
+
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const { width, height } = entry.contentRect;
+        sendBounds(width, height);
+      }
+    });
+
+    observer.observe(dragRef.current);
+    const rect = dragRef.current.getBoundingClientRect();
+    sendBounds(rect.width, rect.height);
+
+    return () => observer.disconnect();
+  }, []);
+
   // Handle dragging logic
   useEffect(() => {
     const onMouseDown = (e) => {
