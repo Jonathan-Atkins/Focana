@@ -39,7 +39,9 @@ function createWindow() {
 
   if (isDev) {
     mainWindow.loadURL('http://localhost:5173');
-    mainWindow.webContents.openDevTools();
+    if (process.env.OPEN_DEVTOOLS === 'true') {
+      mainWindow.webContents.openDevTools();
+    }
   } else {
     const indexHtml = path.join(__dirname, '../dist/index.html');
     mainWindow.loadFile(indexHtml);
