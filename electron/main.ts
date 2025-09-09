@@ -1,14 +1,22 @@
-import { app, BrowserWindow, Menu, MenuItemConstructorOptions } from 'electron';
+import { app, BrowserWindow, Menu, MenuItemConstructorOptions, ipcMain } from 'electron';
 import * as path from 'node:path';
 import { autoUpdater } from 'electron-updater';
 
 let mainWindow: BrowserWindow | null = null;
 const isDev = !app.isPackaged;
 
+ipcMain.on('card-bounds', (_event, bounds: Electron.Rectangle) => {
+  if (mainWindow) {
+    const current = mainWindow.getBounds();
+    mainWindow.setBounds({ ...current, ...bounds });
+  }
+});
+
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 1200,
-    height: 800,
+    width: 384,
+    height: 336,
+    resizable: false,
     title: 'Focana',
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
