@@ -8,7 +8,7 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "start-electron": "npm run build-electron && electron .",
+    "start-electron": "npm run build-electron && electron dist-electron/main.cjs",
     "build-electron": "tsc electron/main.ts electron/preload.ts --outDir dist-electron && mv dist-electron/main.js dist-electron/main.cjs && mv dist-electron/preload.js dist-electron/preload.cjs",
     "dev:desktop": "concurrently \"npm run dev\" \"npm run start-electron\"",
     "build:desktop": "npm run build && electron-builder --mac"
