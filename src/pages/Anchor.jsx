@@ -80,10 +80,12 @@ export default function AnchorApp() {
     if (!window.electronAPI?.setCardBounds || !dragRef.current) return;
 
     const sendBounds = (width, height) => {
-      window.electronAPI.setCardBounds({
-        width: Math.round(width),
-        height: Math.round(height),
-      });
+      if (width > 0 && height > 0) {
+        window.electronAPI.setCardBounds({
+          width: Math.round(width),
+          height: Math.round(height),
+        });
+      }
     };
 
     const observer = new ResizeObserver((entries) => {
@@ -94,8 +96,10 @@ export default function AnchorApp() {
     });
 
     observer.observe(dragRef.current);
-    const rect = dragRef.current.getBoundingClientRect();
-    sendBounds(rect.width, rect.height);
+    requestAnimationFrame(() => {
+      const rect = dragRef.current.getBoundingClientRect();
+      sendBounds(rect.width, rect.height);
+    });
 
     return () => observer.disconnect();
   }, []);
