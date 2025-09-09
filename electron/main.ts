@@ -14,8 +14,10 @@ ipcMain.on('card-bounds', (_event, bounds: Electron.Rectangle) => {
 
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 384,
-    height: 336,
+    width: 1200,
+    height: 800,
+    minWidth: 1200,
+    minHeight: 800,
     resizable: false,
     title: 'Focana',
     webPreferences: {
@@ -31,11 +33,6 @@ function createWindow() {
   ];
   const menu = Menu.buildFromTemplate(template);
   Menu.setApplicationMenu(menu);
-
-  mainWindow.on('resize', () => {
-    const bounds = mainWindow?.getBounds();
-    if (bounds) mainWindow?.webContents.send('window-resize', bounds);
-  });
 
   if (isDev) {
     mainWindow.loadURL('http://localhost:5173');
