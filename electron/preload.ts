@@ -1,4 +1,4 @@
-import { contextBridge } from 'electron';
+import { contextBridge, ipcRenderer } from 'electron';
 
 contextBridge.exposeInMainWorld('electronAPI', {
   onWindowResize: (callback: (event: Electron.IpcRendererEvent, bounds: Electron.Rectangle) => void) =>
