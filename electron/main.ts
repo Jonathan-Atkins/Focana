@@ -1,5 +1,6 @@
 import { app, BrowserWindow, Menu, MenuItemConstructorOptions, ipcMain } from 'electron';
 import * as path from 'node:path';
+import * as fs from 'node:fs';
 import { autoUpdater } from 'electron-updater';
 
 let mainWindow: BrowserWindow | null = null;
@@ -13,14 +14,33 @@ ipcMain.on('card-bounds', (_event, bounds: Electron.Rectangle) => {
 });
 
 function createWindow() {
+  const stateStoreFile = path.join(app.getPath('userData'), 'window-state.json');
+  let state: Partial<Electron.Rectangle> = {};
+  try {
+    state = JSON.parse(fs.readFileSync(stateStoreFile, 'utf8'));
+  } catch {
+    state = {};
+  }
+
   mainWindow = new BrowserWindow({
-    width: 1200,
-    height: 800,
-    resizable: false,
+    width: state.width ?? 1024,
+    height: state.height ?? 768,
+    x: state.x,
+    y: state.y,
     title: 'Focana',
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
     },
+  });
+
+  mainWindow.on('close', () => {
+    if (!mainWindow) return;
+    const bounds = mainWindow.getBounds();
+    try {
+      fs.writeFileSync(stateStoreFile, JSON.stringify(bounds));
+    } catch {
+      // ignore write errors
+    }
   });
 
   const template: MenuItemConstructorOptions[] = [
