@@ -5,9 +5,10 @@ import { autoUpdater } from 'electron-updater';
 
 let mainWindow: BrowserWindow | null = null;
 const isDev = !app.isPackaged;
+const isCardMode = process.env.CARD_MODE === 'true';
 
 ipcMain.on('card-bounds', (_event, bounds: Electron.Rectangle) => {
-  if (mainWindow) {
+  if (mainWindow && isCardMode) {
     const current = mainWindow.getBounds();
     mainWindow.setBounds({ ...current, ...bounds });
   }
@@ -15,9 +16,23 @@ ipcMain.on('card-bounds', (_event, bounds: Electron.Rectangle) => {
 
 function createWindow() {
   const stateStoreFile = path.join(app.getPath('userData'), 'window-state.json');
+  const MIN_WIDTH = 400;
+  const MIN_HEIGHT = 300;
   let state: Partial<Electron.Rectangle> = {};
   try {
     state = JSON.parse(fs.readFileSync(stateStoreFile, 'utf8'));
+    if (
+      typeof state.width === 'number' &&
+      typeof state.height === 'number' &&
+      (state.width < MIN_WIDTH || state.height < MIN_HEIGHT)
+    ) {
+      state = {};
+      try {
+        fs.unlinkSync(stateStoreFile);
+      } catch {
+        // ignore remove errors
+      }
+    }
   } catch {
     state = {};
   }
