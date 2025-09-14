@@ -10,6 +10,8 @@ import {
 } from "@/components/ui/tooltip";
 import { FocusSession } from "@/api/entities";
 
+const isCardMode = import.meta.env.VITE_CARD_MODE === 'true';
+
 import DistractionJar from "../components/DistractionJar";
 import StatusBar from "../components/StatusBar";
 import SessionNotesModal from "../components/SessionNotesModal";
@@ -77,7 +79,7 @@ export default function AnchorApp() {
 
   // Keep Electron window in sync with card size
   useEffect(() => {
-    if (!window.electronAPI?.setCardBounds || !dragRef.current) return;
+    if (!isCardMode || !window.electronAPI?.setCardBounds || !dragRef.current) return;
 
     const sendBounds = (width, height) => {
       if (width > 0 && height > 0) {
