@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Brain, X, Play, Pause, Square, RotateCcw, Minimize2, History } from "lucide-react";
@@ -10,6 +9,7 @@ import {
 } from "@/components/ui/tooltip";
 import { FocusSession } from "@/api/entities";
 
+// Default to card mode unless explicitly disabled
 const isCardMode = import.meta.env.VITE_CARD_MODE !== 'false';
 
 import DistractionJar from "../components/DistractionJar";
