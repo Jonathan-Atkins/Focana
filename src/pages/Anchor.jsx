@@ -429,13 +429,18 @@ export default function AnchorApp() {
                 </TooltipTrigger>
                 <TooltipContent><p>Compact Mode</p></TooltipContent>
               </Tooltip>
-               <Tooltip>
+              <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button size="icon" variant="ghost" className="h-8 w-8 text-[#8B6F47] hover:bg-[#FFF9E6]">
+                  <Button
+                    onClick={() => window.electronAPI.windowAction('close')}
+                    size="icon"
+                    variant="ghost"
+                    className="h-8 w-8 text-[#8B6F47] hover:bg-[#FFF9E6]"
+                  >
                     <X className="w-4 h-4" />
                   </Button>
-                  </TooltipTrigger>
-                <TooltipContent><p>Close (Placeholder)</p></TooltipContent>
+                </TooltipTrigger>
+                <TooltipContent><p>Close</p></TooltipContent>
               </Tooltip>
             </div>
           </div>
