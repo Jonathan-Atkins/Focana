@@ -10,7 +10,8 @@ import {
 } from "@/components/ui/tooltip";
 import { FocusSession } from "@/api/entities";
 
-const isCardMode = import.meta.env.VITE_CARD_MODE === 'true';
+// Default to card mode unless explicitly disabled
+const isCardMode = import.meta.env.VITE_CARD_MODE !== 'false';
 
 import DistractionJar from "../components/DistractionJar";
 import StatusBar from "../components/StatusBar";
@@ -328,16 +329,16 @@ export default function AnchorApp() {
   if (isIncognito) {
     return (
       <TooltipProvider>
-        <div className="min-h-screen bg-[#FFF9E6] p-4 font-sans overflow-hidden">
-           <div
-              ref={dragRef}
-              style={{
-                position: 'absolute',
-                top: `${position.y}px`,
-                left: `${position.x}px`,
-                touchAction: 'none'
-              }}
-            >
+        <div className={isCardMode ? 'w-full h-full font-sans overflow-hidden' : 'min-h-screen bg-[#FFF9E6] p-4 font-sans overflow-hidden'}>
+          <div
+            ref={dragRef}
+            style={{
+              position: 'absolute',
+              top: isCardMode ? 0 : `${position.y}px`,
+              left: isCardMode ? 0 : `${position.x}px`,
+              touchAction: 'none'
+            }}
+          >
               <div ref={handleRef} className="cursor-grab">
                  <IncognitoMode
                     task={task}
@@ -382,14 +383,14 @@ export default function AnchorApp() {
 
   return (
     <TooltipProvider>
-      <div className="min-h-screen bg-[#FFF9E6] p-4 font-sans overflow-hidden">
-        <div 
+      <div className={isCardMode ? 'w-full h-full font-sans overflow-hidden' : 'min-h-screen bg-[#FFF9E6] p-4 font-sans overflow-hidden'}>
+        <div
           ref={dragRef}
           className="w-full max-w-sm bg-[#FFFEF8]/80 backdrop-blur-sm rounded-2xl shadow-2xl shadow-amber-900/10 border border-[#8B6F47]/20 p-4 space-y-4"
           style={{
             position: 'absolute',
-            top: `${position.y}px`,
-            left: `${position.x}px`,
+            top: isCardMode ? 0 : `${position.y}px`,
+            left: isCardMode ? 0 : `${position.x}px`,
             touchAction: 'none'
           }}
         >
