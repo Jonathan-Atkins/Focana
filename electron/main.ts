@@ -1,4 +1,4 @@
-import { app, BrowserWindow, Menu, MenuItemConstructorOptions, ipcMain } from 'electron';
+import { app, BrowserWindow, Menu, MenuItemConstructorOptions, ipcMain, screen } from 'electron';
 import * as path from 'node:path';
 import * as fs from 'node:fs';
 import { autoUpdater } from 'electron-updater';
@@ -42,12 +42,14 @@ function createWindow() {
     }
   }
 
-  const defaultWidth = isCardMode ? 384 : 1024;
-  const defaultHeight = isCardMode ? 480 : 768;
+  const { width: screenWidth, height: screenHeight } = screen.getPrimaryDisplay().workAreaSize;
+  const defaultWidth = isCardMode ? 384 : screenWidth;
+  const defaultHeight = isCardMode ? 480 : screenHeight;
 
   mainWindow = new BrowserWindow({
     width: state.width ?? defaultWidth,
     height: state.height ?? defaultHeight,
+    resizable: !isCardMode,
     x: state.x,
     y: state.y,
     title: 'Focana',
@@ -55,6 +57,10 @@ function createWindow() {
       preload: path.join(__dirname, 'preload.cjs'),
     },
   });
+
+  if (!isCardMode && !state.width && !state.height) {
+    mainWindow.maximize();
+  }
 
   mainWindow.on('close', () => {
     if (!mainWindow) return;

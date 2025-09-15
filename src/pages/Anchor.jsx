@@ -10,6 +10,9 @@ import {
 } from "@/components/ui/tooltip";
 import { FocusSession } from "@/api/entities";
 
+// Enable card mode only when explicitly requested
+const isCardMode = import.meta.env.VITE_CARD_MODE === 'true';
+=======
 // Default to card mode unless explicitly disabled
 const isCardMode = import.meta.env.VITE_CARD_MODE !== 'false';
 
