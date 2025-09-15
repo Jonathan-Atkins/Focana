@@ -130,6 +130,12 @@ function createWindow() {
 app.whenReady().then(() => {
   createWindow();
 
+  if (app.dock) {
+    app.dock.setIcon(path.join(__dirname, 'assets/icon.icns'));
+    const menu = Menu.buildFromTemplate([{ role: 'hide' }, { role: 'quit' }]);
+    app.dock.setMenu(menu);
+  }
+
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
