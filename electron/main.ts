@@ -5,8 +5,8 @@ import { autoUpdater } from 'electron-updater';
 
 let mainWindow: BrowserWindow | null = null;
 const isDev = !app.isPackaged;
-// Enable card mode only when explicitly requested
-const isCardMode = process.env.CARD_MODE === 'true';
+// Default to card mode unless explicitly disabled
+const isCardMode = process.env.CARD_MODE !== 'false';
 
 ipcMain.on('card-bounds', (_event, bounds: Electron.Rectangle) => {
   if (mainWindow && isCardMode) {
