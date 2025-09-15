@@ -10,5 +10,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
         setCardBounds: (bounds: Electron.Rectangle) => ipcRenderer.send('card-bounds', bounds),
       }
     : {}),
+  windowAction: (action: string) => ipcRenderer.invoke('window-action', action),
   versions: process.versions,
 });

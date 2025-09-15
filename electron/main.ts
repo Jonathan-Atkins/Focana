@@ -16,6 +16,26 @@ ipcMain.on('card-bounds', (_event, bounds: Electron.Rectangle) => {
   }
 });
 
+ipcMain.handle('window-action', (_event, action: string) => {
+  if (!mainWindow) return;
+  switch (action) {
+    case 'close':
+      mainWindow.close();
+      break;
+    case 'minimize':
+      mainWindow.minimize();
+      break;
+    case 'restore':
+      mainWindow.restore();
+      break;
+    case 'toggle-fullscreen':
+      mainWindow.setFullScreen(!mainWindow.isFullScreen());
+      break;
+    default:
+      break;
+  }
+});
+
 function createWindow() {
   const stateStoreFile = path.join(app.getPath('userData'), 'window-state.json');
   const MIN_WIDTH = 400;
@@ -77,6 +97,15 @@ function createWindow() {
     {
       label: 'File',
       submenu: [{ role: 'quit' as const }],
+    },
+    {
+      label: 'View',
+      submenu: [
+        {
+          role: 'togglefullscreen' as const,
+          accelerator: 'Ctrl+Command+F',
+        },
+      ],
     },
   ];
   const menu = Menu.buildFromTemplate(template);
