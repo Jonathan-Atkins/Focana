@@ -95,21 +95,18 @@ function createWindow() {
 
   const template: MenuItemConstructorOptions[] = [
     {
-      label: 'File',
-      submenu: [{ role: 'quit' as const }],
-    },
-    {
-      label: 'View',
+      role: 'appMenu',
       submenu: [
-        {
-          role: 'togglefullscreen' as const,
-          accelerator: 'Ctrl+Command+F',
-        },
+        { role: 'about' },
+        { label: 'Preferences', accelerator: 'Cmd+,', click: () => {} },
+        { type: 'separator' },
+        { role: 'hide' },
+        { role: 'quit' },
       ],
     },
+    { role: 'editMenu' },
   ];
-  const menu = Menu.buildFromTemplate(template);
-  Menu.setApplicationMenu(menu);
+  Menu.setApplicationMenu(Menu.buildFromTemplate(template));
 
   if (isDev) {
     mainWindow.loadURL('http://localhost:5173');
