@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Brain, X, Play, Pause, Square, RotateCcw, Minimize2, History } from "lucide-react";
@@ -10,7 +9,8 @@ import {
 } from "@/components/ui/tooltip";
 import { FocusSession } from "@/api/entities";
 
-const isCardMode = import.meta.env.VITE_CARD_MODE === 'true';
+// Default to card mode unless explicitly disabled
+const isCardMode = import.meta.env.VITE_CARD_MODE !== 'false';
 
 import DistractionJar from "../components/DistractionJar";
 import StatusBar from "../components/StatusBar";
@@ -57,12 +57,12 @@ export default function AnchorApp() {
   // Incognito mode state
   const [isIncognito, setIsIncognito] = useState(false);
   
-  const timerRef = useRef(null);
-  const sessionToSave = useRef(null);
+  const timerRef = useRef<number | null>(null);
+  const sessionToSave = useRef<{ duration: number; completed: boolean } | null>(null);
 
   // Draggable window state
-  const dragRef = useRef(null);
-  const handleRef = useRef(null);
+  const dragRef = useRef<HTMLDivElement | null>(null);
+  const handleRef = useRef<HTMLDivElement | null>(null);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const isDraggingRef = useRef(false);
   const offsetRef = useRef({ x: 0, y: 0 });
@@ -81,7 +81,7 @@ export default function AnchorApp() {
   useEffect(() => {
     if (!isCardMode || !window.electronAPI?.setCardBounds || !dragRef.current) return;
 
-    const sendBounds = (width, height) => {
+    const sendBounds = (width: number, height: number) => {
       if (width > 0 && height > 0) {
         window.electronAPI.setCardBounds({
           width: Math.round(width),
@@ -92,14 +92,14 @@ export default function AnchorApp() {
 
     const observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
-        const { width, height } = entry.contentRect;
+        const { width, height } = (entry as any).contentRect as DOMRectReadOnly;
         sendBounds(width, height);
       }
     });
 
     observer.observe(dragRef.current);
     requestAnimationFrame(() => {
-      const rect = dragRef.current.getBoundingClientRect();
+      const rect = dragRef.current!.getBoundingClientRect();
       sendBounds(rect.width, rect.height);
     });
 
@@ -108,14 +108,15 @@ export default function AnchorApp() {
 
   // Handle dragging logic
   useEffect(() => {
-    const onMouseDown = (e) => {
-        if (handleRef.current && handleRef.current.contains(e.target)) {
-            const targetTagName = e.target.tagName;
-            if (targetTagName === 'BUTTON' || targetTagName === 'INPUT' || e.target.closest('button') || e.target.closest('input')) {
+    const onMouseDown = (e: MouseEvent) => {
+        if (handleRef.current && handleRef.current.contains(e.target as Node)) {
+            const target = e.target as HTMLElement;
+            const tag = target.tagName;
+            if (tag === 'BUTTON' || tag === 'INPUT' || target.closest('button') || target.closest('input')) {
                 return;
             }
             isDraggingRef.current = true;
-            const rect = dragRef.current.getBoundingClientRect();
+            const rect = dragRef.current!.getBoundingClientRect();
             offsetRef.current = {
                 x: e.clientX - rect.left,
                 y: e.clientY - rect.top,
@@ -130,7 +131,7 @@ export default function AnchorApp() {
         document.body.style.cursor = '';
     };
 
-    const onMouseMove = (e) => {
+    const onMouseMove = (e: MouseEvent) => {
         if (isDraggingRef.current) {
             setPosition({
                 x: e.clientX - offsetRef.current.x,
@@ -161,12 +162,10 @@ export default function AnchorApp() {
     setSessions(data);
   };
 
-  // State is kept in memory for the duration of the session
-
   // Timer logic
   useEffect(() => {
     if (isRunning) {
-      timerRef.current = setInterval(() => {
+      timerRef.current = window.setInterval(() => {
         setTime(prevTime => {
           if (mode === 'timed' && prevTime <= 1) {
             setIsRunning(false);
@@ -181,7 +180,9 @@ export default function AnchorApp() {
         });
       }, 1000);
     }
-    return () => clearInterval(timerRef.current);
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
   }, [isRunning, mode, initialTime]);
 
   const handlePlay = () => task.trim() && setIsRunning(true);
@@ -213,7 +214,7 @@ export default function AnchorApp() {
     }
   };
 
-  const handleStartSession = (selectedMode, minutes) => {
+  const handleStartSession = (selectedMode: 'freeflow' | 'timed', minutes: number) => {
     setMode(selectedMode);
     
     if (selectedMode === 'freeflow') {
@@ -232,7 +233,7 @@ export default function AnchorApp() {
     setTimeout(() => setIsIncognito(true), 100);
   };
   
-  const handleSaveSessionNotes = async (notes) => {
+  const handleSaveSessionNotes = async (notes: string) => {
     await saveSessionWithNotes(notes);
     setShowNotesModal(false);
     handleClear();
@@ -244,7 +245,7 @@ export default function AnchorApp() {
     handleClear();
   };
 
-  const saveSessionWithNotes = async (notes) => {
+  const saveSessionWithNotes = async (notes: string) => {
     if (!task.trim() || !sessionToSave.current) return;
     
     const { duration, completed } = sessionToSave.current;
@@ -269,7 +270,7 @@ export default function AnchorApp() {
     sessionToSave.current = null;
   };
 
-  const handleUseTask = (session) => {
+  const handleUseTask = (session: any) => {
     setTask(session.task);
     setTime(0);
     setInitialTime(0);
@@ -280,13 +281,13 @@ export default function AnchorApp() {
     setIsTimerVisible(true);
   };
 
-  const handleUpdateTaskNotes = async (sessionId, newNotes) => {
+  const handleUpdateTaskNotes = async (sessionId: string, newNotes: string) => {
     try {
       await FocusSession.update(sessionId, { notes: newNotes });
       await loadSessions();
       
-      if (previewSession && previewSession.id === sessionId) {
-        setPreviewSession({...previewSession, notes: newNotes});
+      if (previewSession && (previewSession as any).id === sessionId) {
+        setPreviewSession({ ...(previewSession as any), notes: newNotes });
       }
       
       if (currentSessionId === sessionId) {
@@ -297,7 +298,7 @@ export default function AnchorApp() {
     }
   };
 
-  const handleUpdateContextNotes = async (newNotes) => {
+  const handleUpdateContextNotes = async (newNotes: string) => {
     setContextNotes(newNotes);
     
     if (currentSessionId && newNotes !== contextNotes) {
@@ -310,16 +311,16 @@ export default function AnchorApp() {
     }
   };
 
-  const addThought = (thoughtText) => setThoughts(prev => [...prev, { text: thoughtText, completed: false }]);
-  const removeThought = (index) => setThoughts(prev => prev.filter((_, i) => i !== index));
-  const toggleThought = (index) => {
+  const addThought = (thoughtText: string) => setThoughts(prev => [...prev, { text: thoughtText, completed: false }]);
+  const removeThought = (index: number) => setThoughts(prev => prev.filter((_, i) => i !== index));
+  const toggleThought = (index: number) => {
     const newThoughts = [...thoughts];
     newThoughts[index].completed = !newThoughts[index].completed;
     setThoughts(newThoughts);
   };
   const clearCompletedThoughts = () => setThoughts(prev => prev.filter(t => !t.completed));
 
-  const formatTime = (seconds) => {
+  const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
@@ -328,16 +329,16 @@ export default function AnchorApp() {
   if (isIncognito) {
     return (
       <TooltipProvider>
-        <div className="min-h-screen bg-[#FFF9E6] p-4 font-sans overflow-hidden">
-           <div
-              ref={dragRef}
-              style={{
-                position: 'absolute',
-                top: `${position.y}px`,
-                left: `${position.x}px`,
-                touchAction: 'none'
-              }}
-            >
+        <div className={isCardMode ? 'w-full h-full font-sans overflow-hidden' : 'min-h-screen bg-[#FFF9E6] p-4 font-sans overflow-hidden'}>
+          <div
+            ref={dragRef}
+            style={{
+              position: 'absolute',
+              top: isCardMode ? 0 : `${position.y}px`,
+              left: isCardMode ? 0 : `${position.x}px`,
+              touchAction: 'none'
+            }}
+          >
               <div ref={handleRef} className="cursor-grab">
                  <IncognitoMode
                     task={task}
@@ -382,14 +383,14 @@ export default function AnchorApp() {
 
   return (
     <TooltipProvider>
-      <div className="min-h-screen bg-[#FFF9E6] p-4 font-sans overflow-hidden">
-        <div 
+      <div className={isCardMode ? 'w-full h-full font-sans overflow-hidden' : 'min-h-screen bg-[#FFF9E6] p-4 font-sans overflow-hidden'}>
+        <div
           ref={dragRef}
           className="w-full max-w-sm bg-[#FFFEF8]/80 backdrop-blur-sm rounded-2xl shadow-2xl shadow-amber-900/10 border border-[#8B6F47]/20 p-4 space-y-4"
           style={{
             position: 'absolute',
-            top: `${position.y}px`,
-            left: `${position.x}px`,
+            top: isCardMode ? 0 : `${position.y}px`,
+            left: isCardMode ? 0 : `${position.x}px`,
             touchAction: 'none'
           }}
         >
