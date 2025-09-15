@@ -1,10 +1,11 @@
-import { app, BrowserWindow, Menu, MenuItemConstructorOptions, ipcMain } from 'electron';
+import { app, BrowserWindow, Menu, MenuItemConstructorOptions, ipcMain, screen } from 'electron';
 import * as path from 'node:path';
 import * as fs from 'node:fs';
 import { autoUpdater } from 'electron-updater';
 
 let mainWindow: BrowserWindow | null = null;
 const isDev = !app.isPackaged;
+// Enable card mode only when explicitly requested
 const isCardMode = process.env.CARD_MODE === 'true';
 
 ipcMain.on('card-bounds', (_event, bounds: Electron.Rectangle) => {
@@ -19,27 +20,36 @@ function createWindow() {
   const MIN_WIDTH = 400;
   const MIN_HEIGHT = 300;
   let state: Partial<Electron.Rectangle> = {};
-  try {
-    state = JSON.parse(fs.readFileSync(stateStoreFile, 'utf8'));
-    if (
-      typeof state.width === 'number' &&
-      typeof state.height === 'number' &&
-      (state.width < MIN_WIDTH || state.height < MIN_HEIGHT)
-    ) {
-      state = {};
-      try {
-        fs.unlinkSync(stateStoreFile);
-      } catch {
-        // ignore remove errors
+
+  // Only restore previous window bounds when not in card mode
+  if (!isCardMode) {
+    try {
+      state = JSON.parse(fs.readFileSync(stateStoreFile, 'utf8'));
+      if (
+        typeof state.width === 'number' &&
+        typeof state.height === 'number' &&
+        (state.width < MIN_WIDTH || state.height < MIN_HEIGHT)
+      ) {
+        state = {};
+        try {
+          fs.unlinkSync(stateStoreFile);
+        } catch {
+          // ignore remove errors
+        }
       }
+    } catch {
+      state = {};
     }
-  } catch {
-    state = {};
   }
 
+  const { width: screenWidth, height: screenHeight } = screen.getPrimaryDisplay().workAreaSize;
+  const defaultWidth = isCardMode ? 384 : screenWidth;
+  const defaultHeight = isCardMode ? 480 : screenHeight;
+
   mainWindow = new BrowserWindow({
-    width: state.width ?? 1024,
-    height: state.height ?? 768,
+    width: state.width ?? defaultWidth,
+    height: state.height ?? defaultHeight,
+    resizable: !isCardMode,
     x: state.x,
     y: state.y,
     title: 'Focana',
@@ -47,6 +57,10 @@ function createWindow() {
       preload: path.join(__dirname, 'preload.cjs'),
     },
   });
+
+  if (!isCardMode && !state.width && !state.height) {
+    mainWindow.maximize();
+  }
 
   mainWindow.on('close', () => {
     if (!mainWindow) return;
