@@ -12,7 +12,6 @@ import { FocusSession } from "@/api/entities";
 
 // Enable card mode only when explicitly requested
 const isCardMode = import.meta.env.VITE_CARD_MODE === 'true';
-=======
 // Default to card mode unless explicitly disabled
 const isCardMode = import.meta.env.VITE_CARD_MODE !== 'false';
 
@@ -332,16 +331,16 @@ export default function AnchorApp() {
   if (isIncognito) {
     return (
       <TooltipProvider>
-        <div className="min-h-screen bg-[#FFF9E6] p-4 font-sans overflow-hidden">
-           <div
-              ref={dragRef}
-              style={{
-                position: 'absolute',
-                top: `${position.y}px`,
-                left: `${position.x}px`,
-                touchAction: 'none'
-              }}
-            >
+        <div className={isCardMode ? 'w-full h-full font-sans overflow-hidden' : 'min-h-screen bg-[#FFF9E6] p-4 font-sans overflow-hidden'}>
+          <div
+            ref={dragRef}
+            style={{
+              position: 'absolute',
+              top: isCardMode ? 0 : `${position.y}px`,
+              left: isCardMode ? 0 : `${position.x}px`,
+              touchAction: 'none'
+            }}
+          >
               <div ref={handleRef} className="cursor-grab">
                  <IncognitoMode
                     task={task}
