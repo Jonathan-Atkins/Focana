@@ -48,7 +48,6 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: state.width ?? defaultWidth,
     height: state.height ?? defaultHeight,
-    resizable: !isCardMode,
     x: state.x,
     y: state.y,
     title: 'Focana',
