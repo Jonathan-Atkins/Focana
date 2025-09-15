@@ -5,6 +5,7 @@ import { autoUpdater } from 'electron-updater';
 
 let mainWindow: BrowserWindow | null = null;
 const isDev = !app.isPackaged;
+
 // Default to card mode unless explicitly disabled
 const isCardMode = process.env.CARD_MODE !== 'false';
 
